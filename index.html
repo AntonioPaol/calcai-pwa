@@ -229,7 +229,7 @@ async function callAI(query){
   micLabel.textContent='Elaboro...'; micLabel.className='mic-label loading';
   resultEl.textContent='...'; explainEl.textContent=''; errorMsg.textContent='';
   try{
-    const res=await fetch(BACKEND+'/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query})});
+    const res=await fetch(BACKEND+'/calculate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query, history: hist.slice(0,6)})});
     const data=await res.json();
     if(data.error)throw new Error(data.error);
     setDisplay(data.result);

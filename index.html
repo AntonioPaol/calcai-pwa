@@ -235,7 +235,7 @@ async function callAI(query){
     setDisplay(data.result);
     explainEl.textContent=data.explanation;
     transcriptEl.className='transcript';
-    hist.unshift({q:query,a:data.result}); if(hist.length>10)hist.pop(); renderHist();
+    hist.unshift({q:query,a:data.result,explanation:data.explanation}); if(hist.length>10)hist.pop(); renderHist();
     if('speechSynthesis' in window&&data.result!=='?'){
       speechSynthesis.cancel();
       const u=new SpeechSynthesisUtterance('Il risultato è '+data.result);

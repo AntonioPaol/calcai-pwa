@@ -1,75 +1,324 @@
-const express = require('express');
-const cors = require('cors');
-const rateLimit = require('express-rate-limit');
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#0a0a10"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="CalcAI"/>
+<title>CalcAI</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0a10;--bg2:#111120;--bg3:#080814;--border:#1e1e2e;--blue:#1a73e8;--purple:#7c3aed;--text:#fff;--text2:#888;--text3:#444;--red:#e24b4a}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto}
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+.logo{font-size:22px;font-weight:600;color:var(--text);letter-spacing:-0.5px}
+.logo span{color:var(--blue)}
+.mode-switch{display:flex;background:var(--bg2);border-radius:20px;border:1px solid var(--border);overflow:hidden}
+.sw-btn{font-size:12px;padding:6px 16px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;transition:all 0.15s}
+.sw-btn.active{background:var(--blue);color:#fff}
+.display{margin:0 16px 8px;background:var(--bg2);border-radius:24px;padding:20px;min-height:120px;display:flex;flex-direction:column;justify-content:space-between}
+.transcript{font-size:13px;color:var(--text3);min-height:18px;font-style:italic}
+.transcript.active{color:#a78bfa}
+.expr{font-size:13px;color:var(--blue);text-align:right;min-height:16px}
+.result-num{font-size:46px;font-weight:300;color:var(--text);letter-spacing:-2px;line-height:1}
+.result-num.small{font-size:30px}
+.result-num.xsmall{font-size:20px}
+.result-explain{font-size:12px;color:var(--text3);margin-top:4px;text-align:right}
+.toolbar{display:flex;justify-content:flex-end;padding:4px 16px 8px}
+.reset-btn{font-size:12px;padding:6px 16px;border-radius:20px;border:1.5px solid #e24b4a;background:#1a0808;color:#ff6b6b;cursor:pointer;font-family:inherit;font-weight:500;letter-spacing:0.2px}
+.panel{display:none;flex-direction:column;flex:1;overflow:hidden}
+.panel.visible{display:flex}
+.mic-area{display:flex;flex-direction:column;align-items:center;padding:16px 20px 10px}
+.mic-btn{width:80px;height:80px;border-radius:50%;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;outline:none;box-shadow:0 0 0 0 rgba(26,115,232,0.4)}
+.mic-btn.recording{background:var(--red);animation:pulse-ring 1.2s infinite}
+.mic-btn.loading{background:#333;cursor:not-allowed}
+.mic-btn i{font-size:28px;color:#fff}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(226,75,74,0.5)}70%{box-shadow:0 0 0 20px rgba(226,75,74,0)}100%{box-shadow:0 0 0 0 rgba(226,75,74,0)}}
+.mic-label{font-size:12px;color:var(--text3);margin-top:10px}
+.mic-label.recording{color:var(--red)}
+.mic-label.loading{color:#a78bfa}
+.error-msg{font-size:12px;color:var(--red);text-align:center;padding:2px 20px;min-height:18px}
+.or-div{display:flex;align-items:center;gap:12px;padding:0 20px;margin:4px 0 10px}
+.or-line{flex:1;height:0.5px;background:var(--border)}
+.or-text{font-size:11px;color:var(--text3)}
+.input-row{display:flex;gap:8px;padding:0 16px;margin-bottom:12px}
+.input-row input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:11px 16px;color:var(--text);font-size:15px;font-family:inherit;outline:none}
+.input-row input::placeholder{color:var(--text3)}
+.input-row input:focus{border-color:var(--blue)}
+.go-btn{width:44px;height:44px;border-radius:14px;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.go-btn i{font-size:18px;color:#fff}
+.chips-wrap{padding:0 16px 10px}
+.chips-label{font-size:11px;color:var(--text3);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text2);cursor:pointer}
+.chip:active{border-color:var(--blue);color:var(--blue)}
+.hist-wrap{flex:1;overflow-y:auto;margin:0 16px;border-top:1px solid var(--border);padding-top:10px}
+.hist-label{font-size:11px;color:var(--text3);margin-bottom:6px}
+.hist-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #0f0f18}
+.hist-q{font-size:12px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:10px}
+.hist-a{font-size:13px;color:var(--blue);white-space:nowrap}
+.classic-toolbar{display:flex;align-items:center;justify-content:flex-end;padding:4px 16px 6px}
+.pro-btn{font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+.pro-btn.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.sci-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);overflow:hidden;max-height:0;transition:max-height 0.3s ease}
+.sci-grid.open{max-height:120px}
+.btn-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
+.btn{background:var(--bg);border:none;color:#ccc;font-size:19px;font-weight:400;height:72px;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,monospace;width:100%}
+.btn:active{background:#252538}
+.btn.fn{color:var(--text2);font-size:15px}
+.btn.sci{color:#a78bfa;font-size:14px;background:var(--bg3);height:56px}
+.btn.op{color:var(--blue);font-size:22px;background:#0b0b18}
+.btn.op.lit{background:var(--blue);color:#fff}
+.btn.eq{background:var(--blue);color:#fff;font-size:24px}
+.btn.eq:active{background:#1254b5}
+.btn.zero{grid-column:span 2;text-align:left;padding-left:30px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">Calc<span>AI</span></div>
+    <div class="mode-switch">
+      <button class="sw-btn active" id="sw-ai">AI</button>
+      <button class="sw-btn" id="sw-classic">Classic</button>
+    </div>
+  </div>
 
-const app = express();
-app.use(express.json());
-app.use(cors());
+  <div class="display">
+    <div class="transcript" id="transcript">Premi il mic o scrivi...</div>
+    <div class="expr" id="expr"></div>
+    <div>
+      <div class="result-num" id="result">—</div>
+      <div class="result-explain" id="explain"></div>
+    </div>
+  </div>
 
-const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  message: { error: 'Troppi calcoli, aspetta un minuto.' }
+  <div class="toolbar">
+    <button class="reset-btn" id="reset-btn">↺ Nuova sessione</button>
+  </div>
+
+  <!-- AI PANEL -->
+  <div class="panel visible" id="panel-ai">
+    <div class="mic-area">
+      <button class="mic-btn" id="mic-btn"><i class="fa-solid fa-microphone"></i></button>
+      <div class="mic-label" id="mic-label">Tocca per parlare</div>
+    </div>
+    <div class="error-msg" id="error-msg"></div>
+    <div class="or-div"><div class="or-line"></div><span class="or-text">oppure scrivi</span><div class="or-line"></div></div>
+    <div class="input-row">
+      <input type="text" id="text-input" placeholder="es. mancia 15% su 64€" autocomplete="off"/>
+      <button class="go-btn" id="send-btn"><i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+    <div class="chips-wrap">
+      <div class="chips-label">Prova:</div>
+      <div class="chips">
+        <span class="chip">22% IVA su 180€</span>
+        <span class="chip">Dividi 97 in 3</span>
+        <span class="chip">Mancia 15% su 64€</span>
+        <span class="chip">500 × 1.05 per 3 anni</span>
+        <span class="chip">Rata mutuo 200k 20 anni 3%</span>
+      </div>
+    </div>
+    <div class="hist-wrap" id="hist-wrap">
+      <div class="hist-label">Storico</div>
+    </div>
+  </div>
+
+  <!-- CLASSIC PANEL -->
+  <div class="panel" id="panel-classic">
+    <div class="classic-toolbar">
+      <button class="pro-btn" id="pro-btn"><i class="fa-solid fa-atom"></i> PRO</button>
+    </div>
+    <div class="sci-grid" id="sci-grid">
+      <button class="btn sci" data-fn="sin">sin</button>
+      <button class="btn sci" data-fn="cos">cos</button>
+      <button class="btn sci" data-fn="tan">tan</button>
+      <button class="btn sci" data-fn="log">log</button>
+      <button class="btn sci" data-fn="ln">ln</button>
+      <button class="btn sci" data-fn="sqrt">√</button>
+      <button class="btn sci" data-fn="sq">x²</button>
+      <button class="btn sci" data-fn="pi">π</button>
+    </div>
+    <div class="btn-grid">
+      <button class="btn fn" data-a="ac">AC</button>
+      <button class="btn fn" data-a="sign">+/−</button>
+      <button class="btn fn" data-a="pct">%</button>
+      <button class="btn op" data-a="op" data-op="÷">÷</button>
+      <button class="btn" data-a="num" data-v="7">7</button>
+      <button class="btn" data-a="num" data-v="8">8</button>
+      <button class="btn" data-a="num" data-v="9">9</button>
+      <button class="btn op" data-a="op" data-op="×">×</button>
+      <button class="btn" data-a="num" data-v="4">4</button>
+      <button class="btn" data-a="num" data-v="5">5</button>
+      <button class="btn" data-a="num" data-v="6">6</button>
+      <button class="btn op" data-a="op" data-op="−">−</button>
+      <button class="btn" data-a="num" data-v="1">1</button>
+      <button class="btn" data-a="num" data-v="2">2</button>
+      <button class="btn" data-a="num" data-v="3">3</button>
+      <button class="btn op" data-a="op" data-op="+">+</button>
+      <button class="btn zero" data-a="num" data-v="0">0</button>
+      <button class="btn" data-a="dot">.</button>
+      <button class="btn eq" data-a="eq">=</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BACKEND='https://calcai-backend-production.up.railway.app';
+const transcriptEl=document.getElementById('transcript');
+const resultEl=document.getElementById('result');
+const explainEl=document.getElementById('explain');
+const exprEl=document.getElementById('expr');
+const micBtn=document.getElementById('mic-btn');
+const micLabel=document.getElementById('mic-label');
+const textInput=document.getElementById('text-input');
+const sendBtn=document.getElementById('send-btn');
+const errorMsg=document.getElementById('error-msg');
+const histWrap=document.getElementById('hist-wrap');
+const proBtn=document.getElementById('pro-btn');
+const sciGrid=document.getElementById('sci-grid');
+const panelAI=document.getElementById('panel-ai');
+const panelClassic=document.getElementById('panel-classic');
+let hist=[],prefs={},cur='0',prev=null,op=null,fresh=false,litBtn=null,proOn=false,isRec=false,rec=null;
+
+// RESET
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  hist=[];
+  prefs={};
+  renderHist();
+  resultEl.textContent='—'; resultEl.className='result-num';
+  explainEl.textContent=''; exprEl.textContent='';
+  transcriptEl.textContent='Premi il mic o scrivi...';
+  transcriptEl.className='transcript';
+  errorMsg.textContent='';
 });
-app.use('/calculate', limiter);
 
-app.post('/calculate', async (req, res) => {
-  const { query, history } = req.body;
-  if (!query || typeof query !== 'string' || query.length > 500) {
-    return res.status(400).json({ error: 'Input non valido.' });
-  }
+// MODE SWITCH
+document.getElementById('sw-ai').addEventListener('click',()=>{
+  document.getElementById('sw-ai').classList.add('active');
+  document.getElementById('sw-classic').classList.remove('active');
+  panelAI.classList.add('visible'); panelClassic.classList.remove('visible');
+});
+document.getElementById('sw-classic').addEventListener('click',()=>{
+  document.getElementById('sw-classic').classList.add('active');
+  document.getElementById('sw-ai').classList.remove('active');
+  panelClassic.classList.add('visible'); panelAI.classList.remove('visible');
+  cur='0'; prev=null; op=null; fresh=false;
+  resultEl.textContent='0'; resultEl.className='result-num';
+  exprEl.textContent=''; explainEl.textContent='';
+});
 
-  const messages = [
-    {
-      role: 'system',
-      content: `Sei una calcolatrice AI con memoria della conversazione. Tieni traccia dei risultati precedenti e usali come base per i calcoli successivi.
-Il contesto include [Risultato precedente: X] prima della query — usalo come punto di partenza quando la query e relativa (es. "meno 8", "dividi per 2").
-L'input puo arrivare da riconoscimento vocale: converti parole in numeri (es. "due virgola cinquanta" = 2.50, "venti" = 20).
-Regole decimali: mostra sempre fino a 6 cifre decimali significative (es. 0.333333). Se l'utente specifica nella query un numero diverso di decimali (es. "con 2 decimali", "arrotonda a 3", "senza decimali"), rispetta quella richiesta SOLO per questa singola risposta, poi torna a 6 decimali.
-Rispondi SEMPRE e SOLO con JSON valido, nessun testo fuori, nessun markdown:
-{"result":<numero>,"explanation":"<max 10 parole in italiano>"}
-Se non e un calcolo: {"result":"?","explanation":"Non e un calcolo"}`
+// PRO
+proBtn.addEventListener('click',()=>{
+  proOn=!proOn;
+  proBtn.className='pro-btn'+(proOn?' on':'');
+  sciGrid.className='sci-grid'+(proOn?' open':'');
+});
+
+// SPEECH
+if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  rec=new SR(); rec.lang='it-IT'; rec.interimResults=true; rec.continuous=false;
+  rec.onstart=()=>{isRec=true;micBtn.className='mic-btn recording';micLabel.textContent='Sto ascoltando...';micLabel.className='mic-label recording';transcriptEl.textContent='...';transcriptEl.className='transcript active';errorMsg.textContent='';};
+  rec.onresult=(e)=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;transcriptEl.textContent=t;if(e.results[e.results.length-1].isFinal)callAI(t);};
+  rec.onerror=(e)=>{resetMic();if(e.error==='not-allowed')errorMsg.textContent='Microfono bloccato. Usa la casella.';};
+  rec.onend=resetMic;
+}
+function resetMic(){isRec=false;micBtn.className='mic-btn';micLabel.textContent='Tocca per parlare';micLabel.className='mic-label';}
+micBtn.addEventListener('click',()=>{if(!rec){errorMsg.textContent='Mic non supportato.';return;}if(isRec)rec.stop();else{errorMsg.textContent='';rec.start();}});
+
+// AI CALL
+async function callAI(query){
+  if(!query.trim())return;
+  transcriptEl.textContent=query; transcriptEl.className='transcript active';
+  micBtn.className='mic-btn loading'; micBtn.disabled=true;
+  micLabel.textContent='Elaboro...'; micLabel.className='mic-label loading';
+  resultEl.textContent='...'; explainEl.textContent=''; errorMsg.textContent='';
+  try{
+    const res=await fetch(BACKEND+'/calculate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query, history:hist.slice(0,50), prefs})
+    });
+    const data=await res.json();
+    if(data.error)throw new Error(data.error);
+    setDisplay(data.result);
+    explainEl.textContent=data.explanation||'';
+    transcriptEl.className='transcript';
+    if(data.pref&&data.pref.decimals!==null&&data.pref.decimals!==undefined)prefs.decimals=data.pref.decimals;
+hist.unshift({q:query,a:data.result,explanation:data.explanation});
+    if(hist.length>50)hist.pop();
+    renderHist();
+    if('speechSynthesis' in window&&data.result!=='?'){
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance('Il risultato è '+data.result);
+      u.lang='it-IT'; speechSynthesis.speak(u);
     }
-  ];
+  }catch(e){resultEl.textContent='—';errorMsg.textContent='Errore: '+(e.message||'riprova');}
+  micBtn.className='mic-btn'; micBtn.disabled=false;
+  micLabel.textContent='Tocca per parlare'; micLabel.className='mic-label';
+}
 
-  if (Array.isArray(history) && history.length > 0) {
-    history.slice(-10).forEach(h => {
-      messages.push({ role: 'user', content: h.q });
-      messages.push({ role: 'assistant', content: `Il risultato e ${h.a}. ${h.explanation || ''}` });
-    });
-  }
+function renderHist(){
+  histWrap.innerHTML='<div class="hist-label">Storico</div>'+
+    hist.map(h=>`<div class="hist-item"><span class="hist-q">${h.q}</span><span class="hist-a">${h.a}</span></div>`).join('');
+}
 
-  const lastResult = Array.isArray(history) && history.length > 0 ? history[0].a : null;
-  const contextQuery = lastResult !== null ? `[Risultato precedente: ${lastResult}] ${query}` : query;
-  messages.push({ role: 'user', content: contextQuery });
+sendBtn.addEventListener('click',()=>{const v=textInput.value.trim();if(v){callAI(v);textInput.value='';}});
+textInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const v=textInput.value.trim();if(v){callAI(v);textInput.value='';}}}); 
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>callAI(c.textContent)));
 
-  try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        temperature: 0,
-        max_tokens: 200,
-        messages
-      })
-    });
+// CLASSIC CALC
+function setDisplay(v){
+  let s=String(v);
+  if(s!=='Errore'&&!isNaN(parseFloat(s))&&s.length>11)s=parseFloat(v).toPrecision(7);
+  resultEl.textContent=s;
+  resultEl.className='result-num'+(s.length>12?' xsmall':s.length>9?' small':'');
+}
+function compute(){
+  let a=parseFloat(prev),b=parseFloat(cur);
+  if(op==='+')return a+b; if(op==='−')return a-b;
+  if(op==='×')return a*b; if(op==='÷')return b===0?'Errore':a/b;
+  return b;
+}
+function clearLit(){if(litBtn){litBtn.classList.remove('lit');litBtn=null;}}
 
-    const data = await response.json();
-    if (data.error) return res.status(500).json({ error: data.error.message });
-
-    const text = data.choices[0].message.content;
-    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-    res.json(parsed);
-  } catch (e) {
-    res.status(500).json({ error: 'Errore interno: ' + e.message });
-  }
+document.querySelectorAll('.btn-grid .btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const a=btn.dataset.a;
+    if(a==='num'){const v=btn.dataset.v;if(fresh||cur==='0'){cur=v;fresh=false;}else if(cur.length<12)cur+=v;clearLit();setDisplay(cur);}
+    else if(a==='dot'){if(fresh){cur='0.';fresh=false;}else if(!cur.includes('.'))cur+='.';setDisplay(cur);}
+    else if(a==='op'){const no=btn.dataset.op;if(op&&!fresh){cur=String(compute());setDisplay(cur);}prev=cur;op=no;fresh=true;exprEl.textContent=prev+' '+op;clearLit();btn.classList.add('lit');litBtn=btn;}
+    else if(a==='eq'){if(!op)return;const r=compute();exprEl.textContent=prev+' '+op+' '+cur+' =';cur=String(r);setDisplay(cur);op=null;prev=null;fresh=true;clearLit();}
+    else if(a==='ac'){cur='0';prev=null;op=null;fresh=false;setDisplay('0');exprEl.textContent='';clearLit();}
+    else if(a==='sign'){cur=String(parseFloat(cur)*-1);setDisplay(cur);}
+    else if(a==='pct'){cur=String(parseFloat(cur)/100);setDisplay(cur);}
+  });
 });
 
-app.get('/health', (_, res) => res.json({ status: 'ok' }));
+document.querySelectorAll('.btn.sci').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const fn=btn.dataset.fn;let val=parseFloat(cur),res;
+    if(fn==='sin')res=Math.sin(val*Math.PI/180);
+    else if(fn==='cos')res=Math.cos(val*Math.PI/180);
+    else if(fn==='tan')res=Math.tan(val*Math.PI/180);
+    else if(fn==='log')res=Math.log10(val);
+    else if(fn==='ln')res=Math.log(val);
+    else if(fn==='sqrt')res=Math.sqrt(val);
+    else if(fn==='sq')res=val*val;
+    else if(fn==='pi'){cur=String(Math.PI);setDisplay(cur);return;}
+    res=parseFloat(res.toPrecision(8));
+    exprEl.textContent=fn+'('+cur+') =';
+    cur=String(res);fresh=true;setDisplay(cur);
+  });
+});
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`CalcAI backend running on port ${PORT}`));
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>

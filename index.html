@@ -59,6 +59,9 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 .chip{font-size:12px;padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text2);cursor:pointer;transition:all 0.1s}
 .chip:active{border-color:var(--blue);color:var(--blue)}
 .hist-wrap{flex:1;overflow-y:auto;margin:0 16px;border-top:1px solid var(--border);padding-top:10px}
+.hist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hist-label{font-size:11px;color:var(--text3)}
+.reset-btn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--red);cursor:pointer;font-family:inherit}
 .hist-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #0f0f18;cursor:pointer}
 .hist-q{font-size:12px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:10px}
 .hist-a{font-size:13px;color:var(--blue);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -124,7 +127,7 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
         <span class="chip">Rata mutuo 200k 20 anni 3%</span>
       </div>
     </div>
-    <div class="hist-wrap" id="hist-wrap"></div>
+    <div class="hist-wrap" id="hist-wrap"><div class="hist-header"><span class="hist-label">Storico</span><button class="reset-btn" id="reset-btn">↺ Reset</button></div></div>
   </div>
 
   <!-- CLASSIC PANEL -->
@@ -247,7 +250,9 @@ async function callAI(query){
 }
 
 function renderHist(){
-  histWrap.innerHTML=hist.map(h=>`<div class="hist-item"><span class="hist-q">${h.q}</span><span class="hist-a">${h.a}</span></div>`).join('');
+  const header='<div class="hist-header"><span class="hist-label">Storico</span><button class="reset-btn" id="reset-btn">↺ Reset</button></div>';
+  histWrap.innerHTML=header+hist.map(h=>`<div class="hist-item"><span class="hist-q">${h.q}</span><span class="hist-a">${h.a}</span></div>`).join('');
+  document.getElementById('reset-btn').addEventListener('click', resetConversation);
   histWrap.querySelectorAll('.hist-item').forEach((el,i)=>el.addEventListener('click',()=>{
     cur=String(hist[i].a); fresh=false; setDisplay(cur);
   }));
@@ -255,6 +260,15 @@ function renderHist(){
 
 sendBtn.addEventListener('click',()=>{const v=textInput.value.trim();if(v){callAI(v);textInput.value='';}});
 textInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const v=textInput.value.trim();if(v){callAI(v);textInput.value='';}}});
+function resetConversation(){
+  hist.length=0;
+  renderHist();
+  resultEl.textContent='—'; explainEl.textContent=''; exprEl.textContent='';
+  transcriptEl.textContent='Premi il mic o scrivi...';
+  transcriptEl.className='transcript';
+  errorMsg.textContent='';
+}
+document.getElementById('reset-btn').addEventListener('click', resetConversation);
 document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>callAI(c.textContent)));
 
 // CLASSIC CALC

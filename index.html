@@ -12,66 +12,170 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{--bg:#0a0a10;--bg2:#111120;--bg3:#080814;--border:#1e1e2e;--blue:#1a73e8;--purple:#7c3aed;--text:#fff;--text2:#888;--text3:#444;--red:#e24b4a}
+:root{--bg:#0a0a10;--bg2:#111120;--bg3:#080814;--border:#1e1e2e;--blue:#1a73e8;--purple:#7c3aed;--text:#fff;--text2:#888;--text3:#444;--red:#e24b4a;--green:#34d399}
 html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden}
-.app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto}
+.app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto;position:relative}
+
+/* SPLASH */
+.splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;transition:opacity 0.5s}
+.splash.hidden{opacity:0;pointer-events:none}
+.splash-logo{font-size:56px;font-weight:700;color:#fff;letter-spacing:-2px;margin-bottom:8px}
+.splash-logo span{color:var(--blue)}
+.splash-sub{font-size:14px;color:var(--text3);letter-spacing:1px}
+.splash-dots{display:flex;gap:8px;margin-top:32px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);animation:dotpulse 1.2s infinite}
+.dot:nth-child(2){animation-delay:0.2s}
+.dot:nth-child(3){animation-delay:0.4s}
+@keyframes dotpulse{0%,100%{background:var(--border)}50%{background:var(--blue)}}
+
+/* ONBOARDING */
+.onboarding{position:fixed;inset:0;background:var(--bg);z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;display:none}
+.onboarding.visible{display:flex}
+.ob-step{display:none;flex-direction:column;align-items:center;text-align:center;width:100%}
+.ob-step.active{display:flex}
+.ob-icon{font-size:56px;margin-bottom:24px}
+.ob-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:12px}
+.ob-desc{font-size:15px;color:var(--text2);line-height:1.6;max-width:280px}
+.ob-dots{display:flex;gap:8px;margin:32px 0 24px}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
+.ob-dot.active{background:var(--blue)}
+.ob-btn{width:100%;max-width:280px;padding:14px;border-radius:16px;border:none;background:var(--blue);color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit}
+.ob-skip{font-size:13px;color:var(--text3);margin-top:16px;cursor:pointer;text-decoration:underline}
+
+/* HEADER */
 .header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
-.logo{font-size:22px;font-weight:600;color:var(--text);letter-spacing:-0.5px}
+.logo{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.5px}
 .logo span{color:var(--blue)}
 .mode-switch{display:flex;background:var(--bg2);border-radius:20px;border:1px solid var(--border);overflow:hidden}
-.sw-btn{font-size:12px;padding:6px 16px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;transition:all 0.15s}
+.sw-btn{font-size:11px;padding:6px 12px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;transition:all 0.15s}
 .sw-btn.active{background:var(--blue);color:#fff}
-.display{margin:0 16px 8px;background:var(--bg2);border-radius:24px;padding:20px;min-height:120px;display:flex;flex-direction:column;justify-content:space-between}
-.transcript{font-size:13px;color:var(--text3);min-height:18px;font-style:italic}
+
+/* DISPLAY */
+.display{margin:0 16px 8px;background:var(--bg2);border-radius:24px;padding:20px;min-height:120px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.display-shine{position:absolute;inset:0;background:linear-gradient(135deg,rgba(26,115,232,0.05) 0%,transparent 60%);pointer-events:none}
+.transcript{font-size:13px;color:var(--text3);min-height:18px;font-style:italic;transition:color 0.2s}
 .transcript.active{color:#a78bfa}
 .expr{font-size:13px;color:var(--blue);text-align:right;min-height:16px}
-.result-num{font-size:46px;font-weight:300;color:var(--text);letter-spacing:-2px;line-height:1}
+.result-wrap{text-align:right;position:relative}
+.result-num{font-size:46px;font-weight:300;color:var(--text);letter-spacing:-2px;line-height:1;transition:transform 0.15s,opacity 0.15s}
+.result-num.pop{animation:pop 0.3s ease}
+@keyframes pop{0%{transform:scale(0.92);opacity:0.5}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
 .result-num.small{font-size:30px}
 .result-num.xsmall{font-size:20px}
-.result-explain{font-size:12px;color:var(--text3);margin-top:4px;text-align:right}
-.toolbar{display:flex;justify-content:flex-end;padding:4px 16px 8px}
-.reset-btn{font-size:12px;padding:6px 16px;border-radius:20px;border:1.5px solid #e24b4a;background:#1a0808;color:#ff6b6b;cursor:pointer;font-family:inherit;font-weight:500;letter-spacing:0.2px}
+.result-explain{font-size:12px;color:var(--text3);margin-top:4px}
+
+/* TOOLBAR */
+.toolbar{display:flex;justify-content:space-between;align-items:center;padding:4px 16px 8px}
+.toolbar-left{font-size:11px;color:var(--text3)}
+.reset-btn{font-size:12px;padding:6px 14px;border-radius:20px;border:1.5px solid var(--red);background:rgba(226,75,74,0.1);color:#ff6b6b;cursor:pointer;font-family:inherit;font-weight:500}
+
+/* PANELS */
 .panel{display:none;flex-direction:column;flex:1;overflow:hidden}
 .panel.visible{display:flex}
-.mic-area{display:flex;flex-direction:column;align-items:center;padding:16px 20px 10px}
-.mic-btn{width:80px;height:80px;border-radius:50%;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;outline:none;box-shadow:0 0 0 0 rgba(26,115,232,0.4)}
-.mic-btn.recording{background:var(--red);animation:pulse-ring 1.2s infinite}
-.mic-btn.loading{background:#333;cursor:not-allowed}
-.mic-btn i{font-size:28px;color:#fff}
-@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(226,75,74,0.5)}70%{box-shadow:0 0 0 20px rgba(226,75,74,0)}100%{box-shadow:0 0 0 0 rgba(226,75,74,0)}}
-.mic-label{font-size:12px;color:var(--text3);margin-top:10px}
+
+/* AI PANEL */
+.mic-area{display:flex;flex-direction:column;align-items:center;padding:14px 20px 10px}
+.mic-btn{width:76px;height:76px;border-radius:50%;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;outline:none;transition:transform 0.15s;box-shadow:0 4px 20px rgba(26,115,232,0.3)}
+.mic-btn:active{transform:scale(0.95)}
+.mic-btn.recording{background:var(--red);animation:pulse-ring 1.2s infinite;box-shadow:0 4px 20px rgba(226,75,74,0.4)}
+.mic-btn.loading{background:#333;cursor:not-allowed;box-shadow:none}
+.mic-btn i{font-size:26px;color:#fff}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(226,75,74,0.5)}70%{box-shadow:0 0 0 18px rgba(226,75,74,0)}100%{box-shadow:0 0 0 0 rgba(226,75,74,0)}}
+.mic-label{font-size:12px;color:var(--text3);margin-top:8px}
 .mic-label.recording{color:var(--red)}
 .mic-label.loading{color:#a78bfa}
-.error-msg{font-size:12px;color:var(--red);text-align:center;padding:2px 20px;min-height:18px}
+
+/* LOADING BAR */
+.loading-bar{height:2px;background:var(--border);margin:0 16px;border-radius:2px;overflow:hidden;opacity:0;transition:opacity 0.2s}
+.loading-bar.visible{opacity:1}
+.loading-bar-inner{height:100%;width:30%;background:linear-gradient(90deg,transparent,var(--blue),transparent);animation:shimmer 1.2s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+
+.error-msg{font-size:12px;color:var(--red);text-align:center;padding:4px 20px;min-height:20px;font-weight:500}
 .or-div{display:flex;align-items:center;gap:12px;padding:0 20px;margin:4px 0 10px}
 .or-line{flex:1;height:0.5px;background:var(--border)}
 .or-text{font-size:11px;color:var(--text3)}
-.input-row{display:flex;gap:8px;padding:0 16px;margin-bottom:12px}
+.input-row{display:flex;gap:8px;padding:0 16px;margin-bottom:10px}
 .input-row input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:11px 16px;color:var(--text);font-size:15px;font-family:inherit;outline:none}
 .input-row input::placeholder{color:var(--text3)}
 .input-row input:focus{border-color:var(--blue)}
-.go-btn{width:44px;height:44px;border-radius:14px;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.go-btn{width:44px;height:44px;border-radius:14px;border:none;background:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s}
+.go-btn:active{background:#1254b5}
 .go-btn i{font-size:18px;color:#fff}
-.chips-wrap{padding:0 16px 10px}
-.chips-label{font-size:11px;color:var(--text3);margin-bottom:8px}
+
+/* TABS inside AI panel */
+.ai-tabs{display:flex;gap:6px;padding:0 16px 10px}
+.ai-tab{font-size:12px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;transition:all 0.15s}
+.ai-tab.active{background:var(--bg2);border-color:var(--blue);color:var(--blue)}
+
+.tab-content{display:none;flex-direction:column;flex:1;overflow:hidden}
+.tab-content.visible{display:flex}
+
+/* CHIPS */
+.chips-wrap{padding:0 16px 8px}
+.chips-label{font-size:11px;color:var(--text3);margin-bottom:6px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:12px;padding:6px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text2);cursor:pointer}
+.chip{font-size:12px;padding:5px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text2);cursor:pointer;transition:all 0.1s}
 .chip:active{border-color:var(--blue);color:var(--blue)}
-.hist-wrap{flex:1;overflow-y:auto;margin:0 16px;border-top:1px solid var(--border);padding-top:10px}
+
+/* HISTORY */
+.hist-wrap{flex:1;overflow-y:auto;margin:0 16px;border-top:1px solid var(--border);padding-top:8px}
 .hist-label{font-size:11px;color:var(--text3);margin-bottom:6px}
-.hist-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #0f0f18}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #0f0f18;cursor:pointer}
+.hist-item:active .hist-a{color:var(--green)}
 .hist-q{font-size:12px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:10px}
 .hist-a{font-size:13px;color:var(--blue);white-space:nowrap}
+.hist-star{font-size:14px;color:var(--text3);margin-left:8px;cursor:pointer;padding:2px}
+.hist-star.saved{color:#f59e0b}
+.no-hist{font-size:12px;color:var(--text3);text-align:center;padding:20px 0}
+
+/* SPLIT BILL */
+.split-wrap{padding:0 16px;overflow-y:auto;flex:1}
+.split-row{display:flex;gap:8px;margin-bottom:10px}
+.split-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-size:15px;font-family:inherit;outline:none}
+.split-input:focus{border-color:var(--blue)}
+.split-input::placeholder{color:var(--text3)}
+.split-label{font-size:12px;color:var(--text3);margin-bottom:6px}
+.split-people{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.split-counter{display:flex;align-items:center;gap:10px;background:var(--bg2);border-radius:12px;border:1px solid var(--border);padding:6px 12px}
+.split-count{font-size:20px;font-weight:500;color:var(--text);min-width:28px;text-align:center}
+.split-arrow{background:none;border:none;color:var(--blue);font-size:20px;cursor:pointer;padding:2px 6px}
+.split-calc-btn{width:100%;padding:13px;border-radius:14px;border:none;background:var(--blue);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:12px}
+.split-result{background:var(--bg2);border-radius:16px;padding:16px;display:none}
+.split-result.visible{display:block}
+.split-result-title{font-size:12px;color:var(--text3);margin-bottom:10px}
+.split-person{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)}
+.split-person:last-child{border-bottom:none}
+.split-person-name{font-size:14px;color:var(--text2)}
+.split-person-amount{font-size:16px;font-weight:500;color:var(--text)}
+.add-person-btn{font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;margin-bottom:10px}
+
+/* CURRENCY */
+.curr-wrap{padding:0 16px;overflow-y:auto;flex:1}
+.curr-input-big{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:14px 18px;color:var(--text);font-size:24px;font-family:inherit;outline:none;margin-bottom:10px;text-align:right}
+.curr-input-big:focus{border-color:var(--blue)}
+.curr-select-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.curr-select{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-size:15px;font-family:inherit;outline:none;appearance:none;cursor:pointer}
+.curr-swap{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);color:var(--blue);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.curr-convert-btn{width:100%;padding:13px;border-radius:14px;border:none;background:var(--blue);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:12px}
+.curr-result{background:var(--bg2);border-radius:16px;padding:16px;display:none;text-align:center}
+.curr-result.visible{display:block}
+.curr-result-num{font-size:36px;font-weight:300;color:var(--text);letter-spacing:-1px}
+.curr-result-label{font-size:12px;color:var(--text3);margin-top:4px}
+.curr-rate{font-size:11px;color:var(--text3);margin-top:8px}
+
+/* CLASSIC */
 .classic-toolbar{display:flex;align-items:center;justify-content:flex-end;padding:4px 16px 6px}
-.pro-btn{font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+.pro-btn{font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all 0.15s}
 .pro-btn.on{background:var(--purple);border-color:var(--purple);color:#fff}
 .sci-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);overflow:hidden;max-height:0;transition:max-height 0.3s ease}
 .sci-grid.open{max-height:120px}
 .btn-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
-.btn{background:var(--bg);border:none;color:#ccc;font-size:19px;font-weight:400;height:72px;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,monospace;width:100%}
+.btn{background:var(--bg);border:none;color:#ccc;font-size:19px;font-weight:400;height:72px;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,monospace;width:100%;transition:background 0.08s}
 .btn:active{background:#252538}
 .btn.fn{color:var(--text2);font-size:15px}
 .btn.sci{color:#a78bfa;font-size:14px;background:var(--bg3);height:56px}
+.btn.sci:active{background:#111}
 .btn.op{color:var(--blue);font-size:22px;background:#0b0b18}
 .btn.op.lit{background:var(--blue);color:#fff}
 .btn.eq{background:var(--blue);color:#fff;font-size:24px}
@@ -80,7 +184,44 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- SPLASH -->
+<div class="splash" id="splash">
+  <div class="splash-logo">Calc<span>AI</span></div>
+  <div class="splash-sub">CALCOLATRICE INTELLIGENTE</div>
+  <div class="splash-dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="onboarding" id="onboarding">
+  <div class="ob-step active" id="ob1">
+    <div class="ob-icon">🎙️</div>
+    <div class="ob-title">Parla o scrivi</div>
+    <div class="ob-desc">Chiedi "quanto fa il 22% di IVA su 180 euro" e CalcAI capisce e risponde.</div>
+  </div>
+  <div class="ob-step" id="ob2">
+    <div class="ob-icon">🧠</div>
+    <div class="ob-title">Ricorda il contesto</div>
+    <div class="ob-desc">Puoi fare calcoli in serie: "dividi in 3" poi "aggiungi 5 euro" e l'AI ricorda tutto.</div>
+  </div>
+  <div class="ob-step" id="ob3">
+    <div class="ob-icon">💱</div>
+    <div class="ob-title">Valute e split bill</div>
+    <div class="ob-desc">Converti valute in tempo reale e dividi conti tra amici con percentuali personalizzate.</div>
+  </div>
+  <div class="ob-dots">
+    <div class="ob-dot active" id="odd1"></div>
+    <div class="ob-dot" id="odd2"></div>
+    <div class="ob-dot" id="odd3"></div>
+  </div>
+  <button class="ob-btn" id="ob-btn">Avanti</button>
+  <span class="ob-skip" id="ob-skip">Salta</span>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" style="opacity:0">
   <div class="header">
     <div class="logo">Calc<span>AI</span></div>
     <div class="mode-switch">
@@ -90,15 +231,19 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
   </div>
 
   <div class="display">
+    <div class="display-shine"></div>
     <div class="transcript" id="transcript">Premi il mic o scrivi...</div>
     <div class="expr" id="expr"></div>
-    <div>
+    <div class="result-wrap">
       <div class="result-num" id="result">—</div>
       <div class="result-explain" id="explain"></div>
     </div>
   </div>
 
+  <div class="loading-bar" id="loading-bar"><div class="loading-bar-inner"></div></div>
+
   <div class="toolbar">
+    <div class="toolbar-left" id="session-info"></div>
     <button class="reset-btn" id="reset-btn">↺ Nuova sessione</button>
   </div>
 
@@ -111,21 +256,119 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
     <div class="error-msg" id="error-msg"></div>
     <div class="or-div"><div class="or-line"></div><span class="or-text">oppure scrivi</span><div class="or-line"></div></div>
     <div class="input-row">
-      <input type="text" id="text-input" placeholder="es. mancia 15% su 64€" autocomplete="off"/>
+      <input type="text" id="text-input" placeholder="es. dividi 97 euro in 3 persone" autocomplete="off"/>
       <button class="go-btn" id="send-btn"><i class="fa-solid fa-arrow-right"></i></button>
     </div>
-    <div class="chips-wrap">
-      <div class="chips-label">Prova:</div>
-      <div class="chips">
-        <span class="chip">22% IVA su 180€</span>
-        <span class="chip">Dividi 97 in 3</span>
-        <span class="chip">Mancia 15% su 64€</span>
-        <span class="chip">500 × 1.05 per 3 anni</span>
-        <span class="chip">Rata mutuo 200k 20 anni 3%</span>
+    <div class="ai-tabs">
+      <button class="ai-tab active" data-tab="chat">💬 Chat</button>
+      <button class="ai-tab" data-tab="split">🍕 Split Bill</button>
+      <button class="ai-tab" data-tab="currency">💱 Valute</button>
+      <button class="ai-tab" data-tab="saved">⭐ Salvati</button>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="tab-content visible" id="tab-chat">
+      <div class="chips-wrap">
+        <div class="chips-label">Prova:</div>
+        <div class="chips">
+          <span class="chip">22% IVA su 180€</span>
+          <span class="chip">Dividi 97 in 3</span>
+          <span class="chip">Mancia 15% su 64€</span>
+          <span class="chip">Rata mutuo 200k 20 anni 3%</span>
+        </div>
+      </div>
+      <div class="hist-wrap" id="hist-wrap">
+        <div class="hist-label">Storico sessione</div>
+        <div class="no-hist" id="no-hist">Nessun calcolo ancora</div>
       </div>
     </div>
-    <div class="hist-wrap" id="hist-wrap">
-      <div class="hist-label">Storico</div>
+
+    <!-- SPLIT BILL TAB -->
+    <div class="tab-content" id="tab-split">
+      <div class="split-wrap">
+        <div class="split-label">Totale conto (€)</div>
+        <div class="split-row">
+          <input class="split-input" id="split-total" type="number" placeholder="es. 97.50"/>
+        </div>
+        <div class="split-label">Persone</div>
+        <div class="split-people">
+          <div class="split-counter">
+            <button class="split-arrow" id="split-minus">−</button>
+            <div class="split-count" id="split-count">2</div>
+            <button class="split-arrow" id="split-plus">+</button>
+          </div>
+        </div>
+        <div class="split-label">Mancia % (opzionale)</div>
+        <div class="split-row">
+          <input class="split-input" id="split-tip" type="number" placeholder="es. 10"/>
+        </div>
+        <button class="split-calc-btn" id="split-calc">Calcola</button>
+        <div class="split-result" id="split-result"></div>
+      </div>
+    </div>
+
+    <!-- CURRENCY TAB -->
+    <div class="tab-content" id="tab-currency">
+      <div class="curr-wrap">
+        <input class="curr-input-big" id="curr-amount" type="number" placeholder="0" value="1"/>
+        <div class="curr-select-row">
+          <select class="curr-select" id="curr-from">
+            <option value="EUR">🇪🇺 EUR — Euro</option>
+            <option value="USD">🇺🇸 USD — Dollaro</option>
+            <option value="GBP">🇬🇧 GBP — Sterlina</option>
+            <option value="JPY">🇯🇵 JPY — Yen</option>
+            <option value="CHF">🇨🇭 CHF — Franco Svizzero</option>
+            <option value="CAD">🇨🇦 CAD — Dollaro Canadese</option>
+            <option value="AUD">🇦🇺 AUD — Dollaro Australiano</option>
+            <option value="CNY">🇨🇳 CNY — Yuan</option>
+            <option value="INR">🇮🇳 INR — Rupia</option>
+            <option value="BRL">🇧🇷 BRL — Real</option>
+            <option value="MXN">🇲🇽 MXN — Peso Messicano</option>
+            <option value="KRW">🇰🇷 KRW — Won</option>
+            <option value="TRY">🇹🇷 TRY — Lira Turca</option>
+            <option value="RUB">🇷🇺 RUB — Rublo</option>
+            <option value="SEK">🇸🇪 SEK — Corona Svedese</option>
+            <option value="NOK">🇳🇴 NOK — Corona Norvegese</option>
+            <option value="DKK">🇩🇰 DKK — Corona Danese</option>
+            <option value="PLN">🇵🇱 PLN — Zloty</option>
+            <option value="CZK">🇨🇿 CZK — Corona Ceca</option>
+            <option value="HUF">🇭🇺 HUF — Fiorino</option>
+          </select>
+          <button class="curr-swap" id="curr-swap">⇄</button>
+          <select class="curr-select" id="curr-to">
+            <option value="USD">🇺🇸 USD — Dollaro</option>
+            <option value="EUR">🇪🇺 EUR — Euro</option>
+            <option value="GBP">🇬🇧 GBP — Sterlina</option>
+            <option value="JPY">🇯🇵 JPY — Yen</option>
+            <option value="CHF">🇨🇭 CHF — Franco Svizzero</option>
+            <option value="CAD">🇨🇦 CAD — Dollaro Canadese</option>
+            <option value="AUD">🇦🇺 AUD — Dollaro Australiano</option>
+            <option value="CNY">🇨🇳 CNY — Yuan</option>
+            <option value="INR">🇮🇳 INR — Rupia</option>
+            <option value="BRL">🇧🇷 BRL — Real</option>
+            <option value="MXN">🇲🇽 MXN — Peso Messicano</option>
+            <option value="KRW">🇰🇷 KRW — Won</option>
+            <option value="TRY">🇹🇷 TRY — Lira Turca</option>
+            <option value="RUB">🇷🇺 RUB — Rublo</option>
+            <option value="SEK">🇸🇪 SEK — Corona Svedese</option>
+            <option value="NOK">🇳🇴 NOK — Corona Norvegese</option>
+            <option value="DKK">🇩🇰 DKK — Corona Danese</option>
+            <option value="PLN">🇵🇱 PLN — Zloty</option>
+            <option value="CZK">🇨🇿 CZK — Corona Ceca</option>
+            <option value="HUF">🇭🇺 HUF — Fiorino</option>
+          </select>
+        </div>
+        <button class="curr-convert-btn" id="curr-convert">Converti</button>
+        <div class="curr-result" id="curr-result"></div>
+      </div>
+    </div>
+
+    <!-- SAVED TAB -->
+    <div class="tab-content" id="tab-saved">
+      <div class="hist-wrap" id="saved-wrap">
+        <div class="hist-label">Calcoli salvati ⭐</div>
+        <div class="no-hist" id="no-saved">Premi ⭐ su un calcolo per salvarlo</div>
+      </div>
     </div>
   </div>
 
@@ -170,6 +413,8 @@ html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSys
 
 <script>
 const BACKEND='https://calcai-backend-production.up.railway.app';
+
+// ELEMENTS
 const transcriptEl=document.getElementById('transcript');
 const resultEl=document.getElementById('result');
 const explainEl=document.getElementById('explain');
@@ -177,113 +422,290 @@ const exprEl=document.getElementById('expr');
 const micBtn=document.getElementById('mic-btn');
 const micLabel=document.getElementById('mic-label');
 const textInput=document.getElementById('text-input');
-const sendBtn=document.getElementById('send-btn');
 const errorMsg=document.getElementById('error-msg');
 const histWrap=document.getElementById('hist-wrap');
-const proBtn=document.getElementById('pro-btn');
-const sciGrid=document.getElementById('sci-grid');
-const panelAI=document.getElementById('panel-ai');
-const panelClassic=document.getElementById('panel-classic');
-let hist=[],prefs={},cur='0',prev=null,op=null,fresh=false,litBtn=null,proOn=false,isRec=false,rec=null;
+const loadingBar=document.getElementById('loading-bar');
+const sessionInfo=document.getElementById('session-info');
 
-// RESET
+// STATE
+let hist=[],saved=JSON.parse(localStorage.getItem('calcai_saved')||'[]');
+let cur='0',prev=null,op=null,fresh=false,litBtn=null,proOn=false,isRec=false,rec=null;
+let splitCount=2;
+let obStep=1;
+
+// ─── SPLASH + ONBOARDING ────────────────────────────────
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('splash').classList.add('hidden');
+    const seen=localStorage.getItem('calcai_ob');
+    if(!seen){
+      document.getElementById('onboarding').classList.add('visible');
+    } else {
+      showApp();
+    }
+  },1800);
+});
+
+function showApp(){
+  document.getElementById('onboarding').classList.remove('visible');
+  const app=document.getElementById('app');
+  app.style.opacity='1';
+  app.style.transition='opacity 0.4s';
+}
+
+document.getElementById('ob-btn').addEventListener('click',()=>{
+  if(obStep<3){
+    document.getElementById('ob'+obStep).classList.remove('active');
+    document.getElementById('odd'+obStep).classList.remove('active');
+    obStep++;
+    document.getElementById('ob'+obStep).classList.add('active');
+    document.getElementById('odd'+obStep).classList.add('active');
+    if(obStep===3) document.getElementById('ob-btn').textContent='Inizia';
+  } else {
+    localStorage.setItem('calcai_ob','1');
+    showApp();
+  }
+});
+document.getElementById('ob-skip').addEventListener('click',()=>{
+  localStorage.setItem('calcai_ob','1');
+  showApp();
+});
+
+// ─── RESET ──────────────────────────────────────────────
 document.getElementById('reset-btn').addEventListener('click',()=>{
   hist=[];
-  prefs={};
   renderHist();
   resultEl.textContent='—'; resultEl.className='result-num';
   explainEl.textContent=''; exprEl.textContent='';
   transcriptEl.textContent='Premi il mic o scrivi...';
   transcriptEl.className='transcript';
   errorMsg.textContent='';
+  sessionInfo.textContent='';
 });
 
-// MODE SWITCH
+// ─── MODE SWITCH ─────────────────────────────────────────
 document.getElementById('sw-ai').addEventListener('click',()=>{
   document.getElementById('sw-ai').classList.add('active');
   document.getElementById('sw-classic').classList.remove('active');
-  panelAI.classList.add('visible'); panelClassic.classList.remove('visible');
+  document.getElementById('panel-ai').classList.add('visible');
+  document.getElementById('panel-classic').classList.remove('visible');
 });
 document.getElementById('sw-classic').addEventListener('click',()=>{
   document.getElementById('sw-classic').classList.add('active');
   document.getElementById('sw-ai').classList.remove('active');
-  panelClassic.classList.add('visible'); panelAI.classList.remove('visible');
-  cur='0'; prev=null; op=null; fresh=false;
-  resultEl.textContent='0'; resultEl.className='result-num';
-  exprEl.textContent=''; explainEl.textContent='';
+  document.getElementById('panel-classic').classList.add('visible');
+  document.getElementById('panel-ai').classList.remove('visible');
+  cur='0';prev=null;op=null;fresh=false;
+  resultEl.textContent='0';resultEl.className='result-num';
+  exprEl.textContent='';explainEl.textContent='';
 });
 
-// PRO
-proBtn.addEventListener('click',()=>{
+// ─── AI TABS ─────────────────────────────────────────────
+document.querySelectorAll('.ai-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('visible'));
+    tab.classList.add('active');
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('visible');
+  });
+});
+
+// ─── PRO ─────────────────────────────────────────────────
+document.getElementById('pro-btn').addEventListener('click',()=>{
   proOn=!proOn;
-  proBtn.className='pro-btn'+(proOn?' on':'');
-  sciGrid.className='sci-grid'+(proOn?' open':'');
+  document.getElementById('pro-btn').className='pro-btn'+(proOn?' on':'');
+  document.getElementById('sci-grid').className='sci-grid'+(proOn?' open':'');
 });
 
-// SPEECH
+// ─── SPEECH ──────────────────────────────────────────────
 if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  rec=new SR(); rec.lang='it-IT'; rec.interimResults=true; rec.continuous=false;
+  rec=new SR();rec.lang='it-IT';rec.interimResults=true;rec.continuous=false;
   rec.onstart=()=>{isRec=true;micBtn.className='mic-btn recording';micLabel.textContent='Sto ascoltando...';micLabel.className='mic-label recording';transcriptEl.textContent='...';transcriptEl.className='transcript active';errorMsg.textContent='';};
   rec.onresult=(e)=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;transcriptEl.textContent=t;if(e.results[e.results.length-1].isFinal)callAI(t);};
-  rec.onerror=(e)=>{resetMic();if(e.error==='not-allowed')errorMsg.textContent='Microfono bloccato. Usa la casella.';};
+  rec.onerror=(e)=>{resetMic();if(e.error==='not-allowed')errorMsg.textContent='Microfono bloccato — usa la casella di testo.';else if(e.error==='network')errorMsg.textContent='Errore di rete sul microfono.';};
   rec.onend=resetMic;
 }
 function resetMic(){isRec=false;micBtn.className='mic-btn';micLabel.textContent='Tocca per parlare';micLabel.className='mic-label';}
-micBtn.addEventListener('click',()=>{if(!rec){errorMsg.textContent='Mic non supportato.';return;}if(isRec)rec.stop();else{errorMsg.textContent='';rec.start();}});
+micBtn.addEventListener('click',()=>{
+  if(!rec){errorMsg.textContent='Microfono non supportato su questo browser. Usa Chrome.';return;}
+  if(isRec)rec.stop();else{errorMsg.textContent='';rec.start();}
+});
 
-// AI CALL
+// ─── AI CALL ─────────────────────────────────────────────
 async function callAI(query){
   if(!query.trim())return;
-  transcriptEl.textContent=query; transcriptEl.className='transcript active';
-  micBtn.className='mic-btn loading'; micBtn.disabled=true;
-  micLabel.textContent='Elaboro...'; micLabel.className='mic-label loading';
-  resultEl.textContent='...'; explainEl.textContent=''; errorMsg.textContent='';
+  transcriptEl.textContent=query;transcriptEl.className='transcript active';
+  micBtn.className='mic-btn loading';micBtn.disabled=true;
+  micLabel.textContent='Elaboro...';micLabel.className='mic-label loading';
+  resultEl.textContent='...';explainEl.textContent='';errorMsg.textContent='';
+  loadingBar.classList.add('visible');
+
+  // offline check
+  if(!navigator.onLine){
+    errorMsg.textContent='Nessuna connessione. Controlla internet e riprova.';
+    micBtn.className='mic-btn';micBtn.disabled=false;
+    micLabel.textContent='Tocca per parlare';micLabel.className='mic-label';
+    loadingBar.classList.remove('visible');
+    resultEl.textContent='—';
+    return;
+  }
+
   try{
     const res=await fetch(BACKEND+'/calculate',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({query, history:hist.slice(0,50), prefs})
+      body:JSON.stringify({query,history:hist.slice(0,50)})
     });
+    if(!res.ok)throw new Error('Server error '+res.status);
     const data=await res.json();
     if(data.error)throw new Error(data.error);
     setDisplay(data.result);
     explainEl.textContent=data.explanation||'';
     transcriptEl.className='transcript';
-    if(data.pref&&data.pref.decimals!==null&&data.pref.decimals!==undefined)prefs.decimals=data.pref.decimals;
-hist.unshift({q:query,a:data.result,explanation:data.explanation});
+    // animate result
+    resultEl.classList.remove('pop');
+    void resultEl.offsetWidth;
+    resultEl.classList.add('pop');
+    hist.unshift({q:query,a:data.result,explanation:data.explanation});
     if(hist.length>50)hist.pop();
     renderHist();
+    sessionInfo.textContent=hist.length+' calcol'+(hist.length===1?'o':'i');
     if('speechSynthesis' in window&&data.result!=='?'){
       speechSynthesis.cancel();
       const u=new SpeechSynthesisUtterance('Il risultato è '+data.result);
-      u.lang='it-IT'; speechSynthesis.speak(u);
+      u.lang='it-IT';speechSynthesis.speak(u);
     }
-  }catch(e){resultEl.textContent='—';errorMsg.textContent='Errore: '+(e.message||'riprova');}
-  micBtn.className='mic-btn'; micBtn.disabled=false;
-  micLabel.textContent='Tocca per parlare'; micLabel.className='mic-label';
+  }catch(e){
+    resultEl.textContent='—';
+    if(!navigator.onLine)errorMsg.textContent='Nessuna connessione internet.';
+    else errorMsg.textContent='Errore: '+(e.message||'riprova tra poco');
+  }
+  micBtn.className='mic-btn';micBtn.disabled=false;
+  micLabel.textContent='Tocca per parlare';micLabel.className='mic-label';
+  loadingBar.classList.remove('visible');
 }
 
 function renderHist(){
-  histWrap.innerHTML='<div class="hist-label">Storico</div>'+
-    hist.map(h=>`<div class="hist-item"><span class="hist-q">${h.q}</span><span class="hist-a">${h.a}</span></div>`).join('');
+  const noHist=document.getElementById('no-hist');
+  if(hist.length===0){
+    histWrap.innerHTML='<div class="hist-label">Storico sessione</div><div class="no-hist">Nessun calcolo ancora</div>';
+    return;
+  }
+  histWrap.innerHTML='<div class="hist-label">Storico sessione</div>'+
+    hist.map((h,i)=>{
+      const isSaved=saved.some(s=>s.q===h.q&&s.a===h.a);
+      return `<div class="hist-item">
+        <span class="hist-q">${h.q}</span>
+        <span class="hist-a">${h.a}</span>
+        <span class="hist-star ${isSaved?'saved':''}" data-idx="${i}">${isSaved?'⭐':'☆'}</span>
+      </div>`;
+    }).join('');
+  histWrap.querySelectorAll('.hist-star').forEach(star=>{
+    star.addEventListener('click',()=>{
+      const idx=parseInt(star.dataset.idx);
+      const item=hist[idx];
+      const exists=saved.findIndex(s=>s.q===item.q&&s.a===item.a);
+      if(exists>=0){saved.splice(exists,1);}
+      else{saved.unshift(item);if(saved.length>20)saved.pop();}
+      localStorage.setItem('calcai_saved',JSON.stringify(saved));
+      renderHist();renderSaved();
+    });
+  });
 }
 
-sendBtn.addEventListener('click',()=>{const v=textInput.value.trim();if(v){callAI(v);textInput.value='';}});
+function renderSaved(){
+  const wrap=document.getElementById('saved-wrap');
+  if(saved.length===0){
+    wrap.innerHTML='<div class="hist-label">Calcoli salvati ⭐</div><div class="no-hist">Premi ⭐ su un calcolo per salvarlo</div>';
+    return;
+  }
+  wrap.innerHTML='<div class="hist-label">Calcoli salvati ⭐</div>'+
+    saved.map((h,i)=>`<div class="hist-item">
+      <span class="hist-q">${h.q}</span>
+      <span class="hist-a">${h.a}</span>
+      <span class="hist-star saved" data-sidx="${i}">⭐</span>
+    </div>`).join('');
+  wrap.querySelectorAll('.hist-star').forEach(star=>{
+    star.addEventListener('click',()=>{
+      saved.splice(parseInt(star.dataset.sidx),1);
+      localStorage.setItem('calcai_saved',JSON.stringify(saved));
+      renderSaved();renderHist();
+    });
+  });
+}
+renderSaved();
+
+// input
+document.getElementById('send-btn').addEventListener('click',()=>{const v=textInput.value.trim();if(v){callAI(v);textInput.value='';}});
 textInput.addEventListener('keydown',e=>{if(e.key==='Enter'){const v=textInput.value.trim();if(v){callAI(v);textInput.value='';}}}); 
 document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>callAI(c.textContent)));
 
-// CLASSIC CALC
+// ─── SPLIT BILL ──────────────────────────────────────────
+document.getElementById('split-minus').addEventListener('click',()=>{if(splitCount>2)splitCount--;document.getElementById('split-count').textContent=splitCount;});
+document.getElementById('split-plus').addEventListener('click',()=>{if(splitCount<20)splitCount++;document.getElementById('split-count').textContent=splitCount;});
+document.getElementById('split-calc').addEventListener('click',()=>{
+  const total=parseFloat(document.getElementById('split-total').value);
+  const tip=parseFloat(document.getElementById('split-tip').value)||0;
+  if(!total||isNaN(total)){errorMsg.textContent='Inserisci il totale del conto.';return;}
+  errorMsg.textContent='';
+  const withTip=total*(1+tip/100);
+  const perPerson=withTip/splitCount;
+  const res=document.getElementById('split-result');
+  res.classList.add('visible');
+  let html=`<div class="split-result-title">Totale con mancia: <strong>€${withTip.toFixed(2)}</strong></div>`;
+  for(let i=1;i<=splitCount;i++){
+    html+=`<div class="split-person"><span class="split-person-name">Persona ${i}</span><span class="split-person-amount">€${perPerson.toFixed(2)}</span></div>`;
+  }
+  res.innerHTML=html;
+  setDisplay('€'+perPerson.toFixed(2));
+  resultEl.classList.remove('pop');void resultEl.offsetWidth;resultEl.classList.add('pop');
+  explainEl.textContent=`quota per ${splitCount} persone${tip>0?' con '+tip+'% mancia':''}`;
+});
+
+// ─── CURRENCY ────────────────────────────────────────────
+document.getElementById('curr-swap').addEventListener('click',()=>{
+  const f=document.getElementById('curr-from');
+  const t=document.getElementById('curr-to');
+  const tmp=f.value;f.value=t.value;t.value=tmp;
+});
+
+document.getElementById('curr-convert').addEventListener('click',async()=>{
+  const amount=parseFloat(document.getElementById('curr-amount').value)||1;
+  const from=document.getElementById('curr-from').value;
+  const to=document.getElementById('curr-to').value;
+  const res=document.getElementById('curr-result');
+  res.className='curr-result';
+  res.innerHTML='<div style="color:var(--text3);font-size:13px">Caricamento...</div>';
+  res.classList.add('visible');
+  try{
+    const r=await fetch(`https://api.frankfurter.app/latest?amount=${amount}&from=${from}&to=${to}`);
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    const converted=d.rates[to];
+    res.innerHTML=`<div class="curr-result-num">${converted.toLocaleString('it-IT',{maximumFractionDigits:4})} ${to}</div>
+      <div class="curr-result-label">${amount} ${from} = ${converted.toFixed(4)} ${to}</div>
+      <div class="curr-rate">Tasso: 1 ${from} = ${(converted/amount).toFixed(6)} ${to}</div>`;
+    setDisplay(converted.toFixed(2));
+    resultEl.classList.remove('pop');void resultEl.offsetWidth;resultEl.classList.add('pop');
+    explainEl.textContent=`${amount} ${from} → ${to}`;
+  }catch(e){
+    if(!navigator.onLine)res.innerHTML='<div style="color:var(--red);font-size:13px">Nessuna connessione internet</div>';
+    else res.innerHTML='<div style="color:var(--red);font-size:13px">Errore caricamento tassi. Riprova.</div>';
+  }
+});
+
+// ─── CLASSIC CALC ─────────────────────────────────────────
 function setDisplay(v){
   let s=String(v);
-  if(s!=='Errore'&&!isNaN(parseFloat(s))&&s.length>11)s=parseFloat(v).toPrecision(7);
+  if(s!=='Errore'&&!isNaN(parseFloat(s))&&s.replace(/[^0-9]/g,'').length>11)s=parseFloat(v).toPrecision(7);
   resultEl.textContent=s;
   resultEl.className='result-num'+(s.length>12?' xsmall':s.length>9?' small':'');
 }
 function compute(){
   let a=parseFloat(prev),b=parseFloat(cur);
-  if(op==='+')return a+b; if(op==='−')return a-b;
-  if(op==='×')return a*b; if(op==='÷')return b===0?'Errore':a/b;
+  if(op==='+')return a+b;if(op==='−')return a-b;
+  if(op==='×')return a*b;if(op==='÷')return b===0?'Errore':a/b;
   return b;
 }
 function clearLit(){if(litBtn){litBtn.classList.remove('lit');litBtn=null;}}
@@ -300,7 +722,6 @@ document.querySelectorAll('.btn-grid .btn').forEach(btn=>{
     else if(a==='pct'){cur=String(parseFloat(cur)/100);setDisplay(cur);}
   });
 });
-
 document.querySelectorAll('.btn.sci').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const fn=btn.dataset.fn;let val=parseFloat(cur),res;
